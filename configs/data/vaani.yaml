@@ -1,0 +1,25 @@
+# Vaani Hindi dataset configuration
+
+dataset_id: ARTPARK-IISc/VAANI
+
+# Districts to download for the tiny dev subset.
+# These are Hindi-dominant districts.
+districts:
+  - MadhyaPradesh_Bhopal
+  - UttarPradesh_Lucknow
+
+# Duration filtering (seconds)
+min_duration: 1.0
+max_duration: 30.0
+
+# Speaker-based split ratios
+train_ratio: 0.8
+val_ratio: 0.1
+test_ratio: 0.1
+
+# Output paths (relative to project root)
+output_dir: data
+raw_dir: data/raw
+manifest_dir: data/manifests
+
+seed: 42
