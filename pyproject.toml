@@ -19,6 +19,7 @@ dependencies = [
     "omegaconf>=2.3",
     "evaluate>=0.4",
     "pydantic>=2.6",
+    "torchcodec>=0.10.0",
 ]
 
 [project.optional-dependencies]

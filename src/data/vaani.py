@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import soundfile as sf
 from datasets import Dataset, get_dataset_config_names, load_dataset
 
@@ -89,6 +90,15 @@ def filter_hindi(ds: Dataset, language_column: str | None = None) -> Dataset:
     return ds
 
 
+def _audio_duration_seconds(audio: Any) -> float | None:
+    """Return duration in seconds from decoded audio (dict or AudioDecoder), or None."""
+    parsed = _get_audio_array_and_sr(audio)
+    if parsed is None:
+        return None
+    arr, sr = parsed
+    return len(arr) / sr
+
+
 def filter_duration(
     ds: Dataset,
     min_dur: float = 1.0,
@@ -99,21 +109,35 @@ def filter_duration(
 
     def _in_range(example: dict) -> bool:
         audio = example.get(audio_column)
-        if audio is None:
+        dur = _audio_duration_seconds(audio)
+        if dur is None:
             return False
-        # HF audio feature stores {"array": ..., "sampling_rate": ...}
-        if isinstance(audio, dict):
-            arr = audio.get("array")
-            sr = audio.get("sampling_rate", 16_000)
-            if arr is not None:
-                dur = len(arr) / sr
-                return min_dur <= dur <= max_dur
-        return True  # keep if we can't compute duration
+        return min_dur <= dur <= max_dur
 
     before = len(ds)
     ds = ds.filter(_in_range)
     logger.info("Duration filter [%.1f, %.1f]s: %d -> %d rows", min_dur, max_dur, before, len(ds))
     return ds
+
+
+def _get_audio_array_and_sr(audio: Any) -> tuple[Any, int] | None:
+    """Extract (array, sample_rate) from decoded audio (dict or HF AudioDecoder)."""
+    if audio is None:
+        return None
+    try:
+        if isinstance(audio, dict):
+            arr = audio.get("array")
+            sr = audio.get("sampling_rate", 16_000)
+        else:
+            # HuggingFace datasets 4.x returns torchcodec AudioDecoder-like object
+            # that supports audio["array"] and audio["sampling_rate"]
+            arr = audio["array"]
+            sr = audio["sampling_rate"]
+        if arr is None:
+            return None
+        return (arr, int(sr))
+    except (TypeError, KeyError):
+        return None
 
 
 def export_audio(
@@ -136,13 +160,17 @@ def export_audio(
 
     for idx, example in enumerate(ds):
         audio = example[audio_col]
-        if not isinstance(audio, dict) or "array" not in audio:
+        parsed = _get_audio_array_and_sr(audio)
+        if parsed is None:
             logger.warning("Skipping row %d: no audio array", idx)
             continue
 
-        array = audio["array"]
-        sr = audio.get("sampling_rate", 16_000)
+        array, sr = parsed
         duration = len(array) / sr
+        # Ensure numpy float32 for soundfile
+        if hasattr(array, "numpy"):
+            array = array.numpy()
+        array = np.asarray(array, dtype=np.float32)
 
         fname = f"{prefix}{idx:06d}.wav"
         audio_path = output_dir / fname
