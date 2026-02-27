@@ -20,6 +20,8 @@ dependencies = [
     "evaluate>=0.4",
     "pydantic>=2.6",
     "torchcodec>=0.10.0",
+    "matplotlib>=3.10.8",
+    "ipykernel>=7.2.0",
 ]
 
 [project.optional-dependencies]
