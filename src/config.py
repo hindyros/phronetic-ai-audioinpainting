@@ -34,11 +34,17 @@ class AudioConfig(BaseModel):
 
 
 class DataConfig(BaseModel):
-    """Dataset and manifest configuration."""
+    """Dataset and manifest configuration.
 
-    manifest_dir: Path = Path("data/manifests")
-    raw_dir: Path = Path("data/raw")
-    processed_dir: Path = Path("data/processed")
+    Paths are language-specific. Use ``data/{raw,processed,manifests}/english``
+    for the English inpainting model and ``data/{raw,processed,manifests}/hindi``
+    for the Hindi Vaani dataset.
+    """
+
+    language: str = "en"
+    manifest_dir: Path = Path("data/manifests/english")
+    raw_dir: Path = Path("data/raw/english")
+    processed_dir: Path = Path("data/processed/english")
     min_duration: float = 1.0
     max_duration: float = 30.0
     train_ratio: float = 0.8

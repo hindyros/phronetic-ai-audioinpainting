@@ -10,6 +10,43 @@ The system will be trained on the Vaani Hindi dataset with realistic telephony-s
 
 ---
 
+## Generative Inpainting Paradigms
+
+Three families of generative approach exist for speech inpainting, in increasing complexity:
+
+| Paradigm | Mechanism | Representative models | Inpainting fit |
+|---|---|---|---|
+| **Discrete (autoregressive / masked infilling)** | Audio encoded as codec tokens; model predicts missing tokens like a language model | VoiceCraft, LEMAS-Edit, VALL-E, MaskGCT | **Best for word-level inpainting** — masked infilling maps directly onto the task |
+| **Continuous (diffusion / flow matching)** | Mel-spectrograms or waveforms generated from noise via a diffusion transformer (DiT) | F5-TTS, LEMAS-TTS, VoiceBox, NaturalSpeech 2 | Good for full utterance re-synthesis; boundary transitions require care |
+| **Hybrid** | Discrete semantic tokens + continuous acoustic refinement | CosyVoice 2/3, FireRedTTS, IndexTTS2 | Best naturalness; two-stage pipeline, highest complexity |
+
+For **word-level inpainting on noisy call recordings**, the discrete (masked infilling) approach is most directly applicable. The LEMAS-Edit model (see literature review §11), which extends VoiceCraft with multilingual training and adaptive decoding, is the closest prior art to this project's goal.
+
+## Hindi-Specific Constraints
+
+**Hindi is a low-resource language for generative speech.** None of the major open-source inpainting systems (including LEMAS) were trained on Hindi. The practical options are:
+
+- **Option A — Fine-tune LEMAS-Edit on Hindi** *(recommended if Option C quality is insufficient)*: Warm-start from the open-source VoiceCraft 330 M checkpoint. Collect Hindi speech data (Common Voice Hindi, IndicTTS, MUCS 2021, or proprietary call recordings). The MMS forced aligner used in the LEMAS pipeline supports Hindi natively (1,100 + languages), so the alignment stage transfers directly. Requires ~100–500 hours of annotated Hindi audio.
+
+- **Option B — Use a multilingual model that already covers Hindi**: Meta MMS-TTS (1,100 + languages), IndicTTS, or CosyVoice 2/3 for zero-shot synthesis. Faster to deploy but less tailored to telephony inpainting.
+
+- **Option C — Pipeline approach** *(start here)*: The most practical production path:
+  ```
+  Noisy call recording
+      → Denoise (DeepFilterNet)
+      → ASR (Whisper large-v3 or IndicWav2Vec) → transcript
+      → Identify corrupted/missing segment via alignment (MMS)
+      → Hindi TTS (IndicTTS / MMS-TTS) with voice cloning reference
+      → Stitch back with crossfade
+  ```
+  This sidesteps end-to-end inpainting model training entirely and is robust for production. Quality is limited by the TTS model's speaker similarity.
+
+- **Option D — Train from scratch**: Requires thousands of hours of Hindi data and significant compute. Not recommended at this stage.
+
+**Recommended sequence:** Start with Option C to establish a working baseline quickly. If speaker similarity or naturalness is insufficient, proceed to Option A (fine-tune LEMAS-Edit on Hindi data collected or curated in Section 1).
+
+---
+
 ## 0. Global Setup
 
 **Goal:** Create a reproducible, GPU-ready research environment with strong experiment tracking.
@@ -195,19 +232,38 @@ Return `corrupted_input`, `mask`, and `clean_target`.
 
 ---
 
-## 6. Discrete Token Diffusion (Optional Phase 2)
+## 6. Generative Codec Inpainting (Optional Phase 2)
 
-*Proceed only if SSL model clearly improves metrics.*
+*Proceed only if SSL model clearly improves metrics. Two sub-paths depending on available resources.*
 
-**Goal:** Token-based diffusion inpainting for highest perceptual quality.
+**Goal:** Token-based inpainting for highest perceptual quality and speaker fidelity.
 
-1. Integrate audio tokenizer (Encodec or SoundStream style).
-2. Implement masked token diffusion.
-3. Modify tokens only in masked regions.
-4. Crossfade boundaries in waveform space.
-5. Add sampling script.
+### 6a. Pipeline Approach (Option C — lower barrier)
 
-**Exit condition:** Audible improvement over SSL model.
+1. Implement the denoising → ASR → alignment → TTS → stitch pipeline described in the "Generative Inpainting Paradigms" section above.
+2. Use **Whisper large-v3** for Hindi ASR and **MMS forced aligner** for word boundaries.
+3. Use **IndicTTS** or **Meta MMS-TTS** for Hindi re-synthesis.
+4. Implement crossfade stitching at boundaries (zero-crossing aligned).
+5. Evaluate speaker similarity (WavLM-based SIM score) vs. the SSL inpainting model.
+
+**Exit condition:** Pipeline produces intelligible, boundary-smooth restorations. Compare speaker SIM against Section 5 baseline.
+
+### 6b. LEMAS-Edit Fine-Tuning on Hindi (Option A — higher quality)
+
+*Proceed if Option C speaker similarity is insufficient or if sufficient Hindi training data is available.*
+
+1. Clone the LEMAS-Project repository (https://github.com/LEMAS-Project) and install its dependencies.
+2. Warm-start from the released VoiceCraft 330 M checkpoint (LEMAS-Edit initialization strategy).
+3. Prepare Hindi training data:
+   - Vaani dataset (already prepared in Section 1).
+   - Augment with Common Voice Hindi, IndicTTS, or MUCS 2021 if available.
+   - Use MMS forced aligner to generate word-level timestamps (natively supports Hindi).
+4. Fine-tune LEMAS-Edit with language tag `<hi>` inserted at context switches.
+5. Use the adaptive decoding strategy from the paper: history-aware repetition penalty and speech-rate-based re-generation to suppress silence loops.
+6. Integrate DeepFilterNet for pre-processing telephony noise before inference.
+7. Evaluate on held-out Hindi call segments with WER, PESQ, STOI, and speaker SIM.
+
+**Exit condition:** Fine-tuned LEMAS-Edit outperforms the pipeline approach on speaker similarity and naturalness (subjective A/B test).
 
 ---
 

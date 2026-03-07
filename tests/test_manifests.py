@@ -21,7 +21,7 @@ from src.data.manifest import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
-def _make_records(n_speakers: int = 10, utts_per_speaker: int = 5) -> list[dict]:
+def _make_records(n_speakers: int = 10, utts_per_speaker: int = 5, language: str = "en") -> list[dict]:
     """Generate synthetic manifest records for testing."""
     records = []
     for s in range(n_speakers):
@@ -31,7 +31,7 @@ def _make_records(n_speakers: int = 10, utts_per_speaker: int = 5) -> list[dict]
                     "audio_path": f"/tmp/audio/spk{s:03d}_{u:03d}.wav",
                     "speaker_id": f"spk{s:03d}",
                     "duration": 3.5 + u * 0.1,
-                    "language": "hi",
+                    "language": language,
                 }
             )
     return records
@@ -83,10 +83,10 @@ class TestSpeakerSplits:
 
 
 class TestLanguageField:
-    def test_all_language_hi(self, split_records):
-        """All records must have language == 'hi'."""
+    def test_language_field_present_and_nonempty(self, split_records):
+        """All records must have a non-empty language field."""
         for r in split_records:
-            assert r["language"] == "hi", f"Expected 'hi', got '{r['language']}'"
+            assert r.get("language"), f"language field missing or empty: {r}"
 
 
 class TestManifestSchema:
@@ -132,13 +132,13 @@ class TestValidation:
         errors = validate_manifest(bad)
         assert any("missing" in e for e in errors)
 
-    def test_wrong_language_detected(self):
+    def test_empty_language_detected(self):
         bad = [
             {
                 "audio_path": "/x.wav",
                 "speaker_id": "s",
                 "duration": 1.0,
-                "language": "en",
+                "language": "",
                 "split": "train",
             }
         ]
@@ -153,11 +153,11 @@ class TestFilesReadable:
     """
 
     @pytest.mark.skipif(
-        not Path("data/manifests/train.jsonl").exists(),
-        reason="Manifests not generated yet (run prepare_vaani_hindi.py first)",
+        not Path("data/manifests/hindi/train.jsonl").exists(),
+        reason="Hindi manifests not generated yet (run prepare_vaani_hindi.py first)",
     )
     def test_files_exist(self):
-        records = read_manifest("data/manifests/train.jsonl")
+        records = read_manifest("data/manifests/hindi/train.jsonl")
         # Check up to 5 files
         for r in records[:5]:
             p = Path(r["audio_path"])

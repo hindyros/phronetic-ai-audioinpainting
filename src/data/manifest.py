@@ -118,6 +118,6 @@ def validate_manifest(records: list[dict[str, Any]]) -> list[str]:
         missing = REQUIRED_FIELDS - set(r.keys())
         if missing:
             errors.append(f"Row {i}: missing fields {missing}")
-        if r.get("language") != "hi":
-            errors.append(f"Row {i}: language is '{r.get('language')}', expected 'hi'")
+        elif not r.get("language"):
+            errors.append(f"Row {i}: language field is empty")
     return errors

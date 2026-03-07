@@ -133,8 +133,32 @@ Below is a curated list of 10 leading‑edge papers directly relevant to **audio
 
 ---
 
-You can use these papers as references to motivate your choice of:  
-- **TF‑domain U‑Net + mask‑aware loss** (inspired by Janssen 2.0).  
-- **SSL‑based inpainting with HuBERT‑style encoders** (from *Is Self‑Supervised Learning Enough…*).  
-- **Diffusion‑based or discrete‑diffusion speech inpainting** for long gaps (PGDI and AIDD).  
-- **Band‑split or low‑latency Transformer‑based PLC** for real‑time deployment (BS‑PLCNet 2, CRN‑Trans, ICASSP 2024 challenge systems).  
+## 11. *LEMAS: A 150K‑Hour Large‑scale Extensible Multilingual Audio Suite with Generative Speech Models*
+**Paper:** https://arxiv.org/abs/2601.04233
+**Code / Dataset:** https://github.com/LEMAS-Project · https://huggingface.co/LEMAS-Project
+**Architecture & technique:**
+- Introduces **LEMAS-Dataset**: 150,000 hours of multilingual speech across 10 languages (Chinese, English, Russian, Spanish, Indonesian, German, Portuguese, Vietnamese, French, Italian) with rigorous **word‑level timestamps** obtained via MMS forced alignment — the largest open‑source multilingual corpus with temporal annotations.
+- Trains two benchmark generative models on this dataset:
+  - **LEMAS-TTS** — non-autoregressive **flow‑matching** TTS built on the F5-TTS architecture, using a Diffusion Transformer (DiT) backbone. Adds a **CTC alignment loss** (to enforce phoneme–acoustic monotonicity) and an **accent‑adversarial disentanglement** objective via a Gradient Reversal Layer, suppressing cross‑lingual accent leakage. A cross‑lingual prosody encoder (ECAPA-TDNN) provides fine‑grained prosody conditioning.
+  - **LEMAS-Edit** — autoregressive **codec‑based speech editing** model extending VoiceCraft, which frames inpainting as a **masked token infilling** task. Introduces a history‑aware repetition penalty to suppress silence loops, an adaptive re‑generation mechanism that monitors speaking rate to prevent run‑away decoding, and a full signal‑enhancement pipeline (UVR5 for mild denoising, DeepFilterNet for aggressive suppression).
+- The editing pipeline uses **Whisper large** for multilingual ASR and the **MMS Forced Aligner** for precise word‑level boundary detection, enabling surgical, word‑granularity inpainting with natural transitions.
+
+**Results:**
+- LEMAS‑TTS achieves lower WER and higher speaker similarity than OpenAudio‑S1‑Mini across all 10 languages (avg. WER **6.39 %** vs. 12.27 %).
+- LEMAS‑Edit produces seamless, smooth‑boundary edits on in‑the‑wild noisy recordings, including audio with background noise comparable to call‑center conditions.
+- Subjective A/B tests show LEMAS‑Edit is preferred for naturalness over LEMAS‑TTS on editing tasks across seven languages.
+
+**Relevance to this project:**
+- LEMAS‑Edit is architecturally the closest prior work to our goal: codec‑based masked infilling with precise temporal alignment applied to noisy, in‑the‑wild speech — directly analogous to our customer‑call restoration task.
+- The MMS aligner used in their pipeline natively supports **Hindi** (it covers 1,100 + languages), so the alignment component transfers directly.
+- **Hindi is not among the 10 LEMAS training languages**, but the open‑source codebase and warm‑start from the 330 M‑parameter VoiceCraft checkpoint provide a practical fine‑tuning path (see project plan Section 6).
+- The signal‑enhancement components (DeepFilterNet, UVR5) directly address telephony noise present in our target recordings.
+
+---
+
+You can use these papers as references to motivate your choice of:
+- **TF‑domain U‑Net + mask‑aware loss** (inspired by Janssen 2.0).
+- **SSL‑based inpainting with HuBERT‑style encoders** (from *Is Self‑Supervised Learning Enough…*).
+- **Diffusion‑based or discrete‑diffusion speech inpainting** for long gaps (PGDI and AIDD).
+- **Band‑split or low‑latency Transformer‑based PLC** for real‑time deployment (BS‑PLCNet 2, CRN‑Trans, ICASSP 2024 challenge systems).
+- **Autoregressive codec inpainting with temporal alignment** for word‑level editing on noisy speech (LEMAS‑Edit / VoiceCraft).  

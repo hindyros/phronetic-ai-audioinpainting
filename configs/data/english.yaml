@@ -1,0 +1,20 @@
+# English dataset configuration (primary focus for speech inpainting model)
+# Populate dataset_id and any dataset-specific fields once an English dataset is chosen.
+
+language: en
+
+# Duration filtering (seconds)
+min_duration: 1.0
+max_duration: 30.0
+
+# Speaker-based split ratios
+train_ratio: 0.8
+val_ratio: 0.1
+test_ratio: 0.1
+
+# Output paths (relative to project root)
+raw_dir: data/raw/english
+processed_dir: data/processed/english
+manifest_dir: data/manifests/english
+
+seed: 42

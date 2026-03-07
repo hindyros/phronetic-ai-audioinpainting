@@ -46,7 +46,7 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         type=str,
         default="data",
-        help="Root output directory (default: data/).",
+        help="Root output directory (default: data/). Raw audio goes to <output-dir>/raw/hindi/, manifests to <output-dir>/manifests/hindi/.",
     )
     parser.add_argument(
         "--min-duration", type=float, default=1.0, help="Min utterance duration (s)."
@@ -77,8 +77,8 @@ def main() -> None:
 
     districts = args.districts or DEFAULT_DISTRICTS
     output_dir = Path(args.output_dir)
-    raw_dir = output_dir / "raw"
-    manifest_dir = output_dir / "manifests"
+    raw_dir = output_dir / "raw" / "hindi"
+    manifest_dir = output_dir / "manifests" / "hindi"
 
     all_records: list[dict] = []
 

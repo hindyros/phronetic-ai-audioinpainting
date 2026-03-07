@@ -1,7 +1,7 @@
 [project]
 name = "audio-inpainting"
 version = "0.1.0"
-description = "Hindi speech inpainting for recorded customer call restoration"
+description = "English speech inpainting for recorded customer call restoration (Hindi data kept separately for future work)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

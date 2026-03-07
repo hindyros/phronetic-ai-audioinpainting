@@ -1,6 +1,7 @@
 # Vaani Hindi dataset configuration
 
 dataset_id: ARTPARK-IISc/VAANI
+language: hi
 
 # Districts to download for the tiny dev subset.
 # These are Hindi-dominant districts.
@@ -19,7 +20,7 @@ test_ratio: 0.1
 
 # Output paths (relative to project root)
 output_dir: data
-raw_dir: data/raw
-manifest_dir: data/manifests
+raw_dir: data/raw/hindi
+manifest_dir: data/manifests/hindi
 
 seed: 42

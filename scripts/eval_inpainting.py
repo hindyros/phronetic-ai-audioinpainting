@@ -15,7 +15,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--manifest",
         type=str,
-        default="data/manifests/test.jsonl",
+        default="data/manifests/english/test.jsonl",
         help="Test manifest JSONL.",
     )
     parser.add_argument(
