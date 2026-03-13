@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "/Users/hindy/.virtualenvs/global_notebooker/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "jupyter.notebookFileRoot": "${workspaceFolder}",
+  "terminal.integrated.env.osx": {
+    "MPLCONFIGDIR": "${workspaceFolder}/.cache/matplotlib",
+    "XDG_CACHE_HOME": "${workspaceFolder}/.cache"
+  }
+}

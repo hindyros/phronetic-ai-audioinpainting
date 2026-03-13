@@ -6,22 +6,10 @@
 ---
 
 ## Required Python Packages
-```python
-# Run once before starting the notebook
-pip install \
-  jiwer \
-  pydub \
-  nltk \
-  jupyter \
-  ipykernel \
-  ipywidgets \
-  numpy \
-  pandas \
-  matplotlib \
-  seaborn \
-  tqdm \
-  librosa \
-  --break-system-packages
+Use the repo-local notebook environment instead of installing packages into the system Python:
+
+```bash
+./scripts/setup_notebook_env.sh
 ```
 
 | Package | Source | Purpose |
@@ -70,23 +58,9 @@ sudo apt install python3-soundfile
 
 ## Step 4 — Install Python Packages
 
-`python3-librosa` is unavailable via `apt` on this Ubuntu version.  
-All Python packages installed system-wide using the `--break-system-packages` flag:
+From the repository root, use the project-managed environment instead of the system Python:
 ```bash
-pip install \
-  jiwer \
-  pydub \
-  nltk \
-  jupyter \
-  ipykernel \
-  ipywidgets \
-  numpy \
-  pandas \
-  matplotlib \
-  seaborn \
-  tqdm \
-  librosa \
-  --break-system-packages
+./scripts/setup_notebook_env.sh
 ```
 
 ---
@@ -150,8 +124,10 @@ tar -xzf nptel-pure-set.tar.gz -C ./nptel-pure-set
 
 ## Step 8 — Launch EDA Notebook
 ```bash
-jupyter notebook NPTEL2020_EDA.ipynb
+uv run jupyter lab data/eda/english/NPTEL2020_EDA.ipynb
 ```
+
+In Cursor, open the notebook and select the `global_notebooker` kernel.
 
 Update `DATA_ROOT` and `SAMPLE_ROOT` in the notebook config cell:
 ```python

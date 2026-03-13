@@ -26,6 +26,23 @@ uv run pre-commit install
 uv run huggingface-cli login
 ```
 
+### Notebook Setup In Cursor
+
+Use the repo-local `.venv` so notebooks keep working when you reopen Cursor:
+
+```bash
+chmod +x scripts/setup_notebook_env.sh
+./scripts/setup_notebook_env.sh
+```
+
+This creates or updates the shared environment at `~/.virtualenvs/global_notebooker`, installs the
+project, notebook, and dev dependencies, and registers a stable Jupyter kernel named
+`global_notebooker`.
+
+Cursor will prefer `/Users/hindy/.virtualenvs/global_notebooker/bin/python` via `.vscode/settings.json`.
+When you open a notebook, pick the `global_notebooker` kernel once and Cursor should keep reusing that project
+environment across sessions.
+
 ## Project Structure
 
 ```
