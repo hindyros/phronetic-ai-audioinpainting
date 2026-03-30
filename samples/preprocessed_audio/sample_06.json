@@ -1,0 +1,31 @@
+{
+  "source": "/Users/hindy/Desktop/Academics/MIT/MIT MBAn/Spring/GenAI Lab/phronetic-ai-audioinpainting/samples/raw_audio/sample_06.wav",
+  "output": "/Users/hindy/Desktop/Academics/MIT/MIT MBAn/Spring/GenAI Lab/phronetic-ai-audioinpainting/samples/preprocessed_audio/sample_06.wav",
+  "sample_rate": 16000,
+  "duration_sec": 6.05,
+  "num_cuts": 2,
+  "cut_ms_range": [
+    1.0,
+    200.0
+  ],
+  "seed": 666,
+  "event_count": 2,
+  "events": [
+    {
+      "type": "cut",
+      "start_sample": 16238,
+      "end_sample": 17899,
+      "start_sec": 1.0149,
+      "end_sec": 1.1187,
+      "duration_ms": 103.81
+    },
+    {
+      "type": "cut",
+      "start_sample": 48796,
+      "end_sample": 49371,
+      "start_sec": 3.0497,
+      "end_sec": 3.0857,
+      "duration_ms": 35.95
+    }
+  ]
+}
