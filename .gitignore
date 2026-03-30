@@ -17,6 +17,8 @@ build/
 data/raw/
 data/processed/
 experiments/
+samples/
+tmp/
 
 .DS_Store
 *.swp
